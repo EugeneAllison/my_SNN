@@ -1,0 +1,23 @@
+{
+    "root_dir": "0.4_3424",
+    "init_id": 0,
+    "trial_num": 1,
+    "net_dims": [
+        784,
+        1000,
+        10
+    ],
+    "n_epochs": 20,
+    "batch_size": 100,
+    "lr": 1,
+    "k": 4,
+    "seed": 3424,
+    "amp": 0.01,
+    "radian": false,
+    "final_only": false,
+    "use_bp": false,
+    "T": 100,
+    "T_th": 20,
+    "dt": 0.25,
+    "rho": 0
+}

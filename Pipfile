@@ -1,0 +1,23 @@
+[[source]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cu111"
+verify_ssl = false
+
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[pipenv]
+allow_prereleases = true
+
+[packages]
+torch = {index="pytorch", version="==1.10.0"}
+torchvision = {index="pytorch", version="==0.11.0"}
+pathos = {index="pypi", version="*"}
+parse = {index="pypi", version="*"}
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"
