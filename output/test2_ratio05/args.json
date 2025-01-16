@@ -1,0 +1,17 @@
+{
+    "root_dir": "./output/test2_ratio05",
+    "net_dims": [
+        784,
+        1000,
+        10
+    ],
+    "n_epochs": 20,
+    "batch_size": 100,
+    "lr": 1.0,
+    "bfunc": "generate_random_ga",
+    "amp": 1.0,
+    "phase": 0.0,
+    "T": 100,
+    "T_th": 20,
+    "dt": 0.25
+}

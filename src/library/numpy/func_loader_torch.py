@@ -20,6 +20,7 @@ __all__ = [
     "linear",
     "constant",
     "NoiseFunc",
+    "generate_random_ga_01",
 ]
 
 import sys
@@ -115,7 +116,7 @@ class NoiseFunc(object):
         noise = self.noise_amp * torch.randn_like(t)
         return self.func(t + noise)
 
-def generate_random_ga(shape, ratio, seed):
+def generate_random_ga_01(shape, ratio, seed):
     """生成指定比例为1的随机向量"""
     torch.manual_seed(seed)
     ga = torch.zeros(shape, device=device)
