@@ -30,57 +30,45 @@ import src.library.style
 import src.library.numpy.func_loader_torch
 from src.library.numpy.spiking_network_torch import SpikingNetwork
 
+# 命令行参数解析
 parser = argparse.ArgumentParser()
-parser.add_argument("--root_dir", type=str, required=True)  # 必须
-parser.add_argument("--init_id", type=int, default=0)
-parser.add_argument("--trial_num", type=int, default=1)
+parser.add_argument("--root_dir", type=str, required=True)
 parser.add_argument("--net_dims", type=int, nargs="+", default=[784, 1000, 10])
 parser.add_argument("--n_epochs", type=int, default=20)
 parser.add_argument("--batch_size", type=int, default=100)
-parser.add_argument("--lr", type=float, default=1)
-parser.add_argument("--bfunc", type=str, required=True)  # 必须
+parser.add_argument("--lr", type=float, default=1.0)
+parser.add_argument("--bfunc", type=str, required=True)
 parser.add_argument("--amp", type=float, default=1.0)
-parser.add_argument("--phase", type=float, default=0)
-
-parser.add_argument("--radian", action="store_true")
-parser.add_argument("--final_only", action="store_true")
-parser.add_argument("--use_bp", action="store_true")
-
+parser.add_argument("--phase", type=float, default=0.0)
 parser.add_argument("--T", type=float, default=100)
 parser.add_argument("--T_th", type=float, default=20)
 parser.add_argument("--dt", type=float, default=0.25)
-
+parser.add_argument("--n", type=float, default=1.0)
+parser.add_argument("--seed", type=int, default=42)
 args = parser.parse_args()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Ensure data is moved to the same device
 data_train = datasets.MNIST("../data/mnist", train=True, download=True)
 data_eval = datasets.MNIST("../data/mnist", train=False, download=True)
 
-X_train, Y_train = data_train.data.float().to(device) / 255, data_train.targets.to(
-    device
-)
-X_eval, Y_eval = data_eval.data.float().to(device) / 255, data_eval.targets.to(device)
+X_train = data_train.data.float().to(device) / 255
+Y_train = data_train.targets.to(device)
+X_eval = data_eval.data.float().to(device) / 255
+Y_eval = data_eval.targets.to(device)
 X_train = X_train.view(X_train.shape[0], -1)
 X_eval = X_eval.view(X_eval.shape[0], -1)
 
 
-def is_float(element):
-    try:
-        float(element)
-        return True
-    except ValueError:
-        return False
+def generate_random_ga(shape, n, seed):
+    """Generate random vector with values in the range [-n, n]."""
+    torch.manual_seed(seed)
+    return (torch.rand(shape, device=device) * 2 * n) - n
 
 
 func = getattr(src.library.numpy.func_loader_torch, args.bfunc)
-if args.radian:
-    phase = args.phase
-else:
-    phase = args.phase * math.pi / 180
-
-bfunc = lambda v: func(v.shape, 0.8, 42)
+phase = args.phase
+bfunc = lambda v: generate_random_ga(v.shape, args.n, args.seed)
 
 
 def run(model, X, Y, dt, T, T_th=float("inf"), callback=None):
@@ -102,9 +90,7 @@ def run(model, X, Y, dt, T, T_th=float("inf"), callback=None):
             if t < T_th:
                 out = model.step(dt, x, dh)
             else:
-                out = model.step(
-                    dt, x, dh, bfunc, args.lr, args.final_only, args.use_bp
-                )
+                out = model.step(dt, x, dh, bfunc, args.lr)
             os[cnt] = out
         if callback is not None:
             callback(model)
@@ -121,13 +107,11 @@ if __name__ == "__main__":
     with open(f"{args.root_dir}/args.json", mode="w") as f:
         json.dump(args.__dict__, f, indent=4)
 
-    # model = SpikingNetwork(args.net_dims).to(device)
     model = SpikingNetwork(args.net_dims)
-
     minibatch_cnt = X_train.shape[0] // args.batch_size
     model.record(size=args.n_epochs * minibatch_cnt * 2)
 
-    fig_hist = Figure(figsize=(8 * len(model.layers), 8))  # 图片 137（now）～～147
+    fig_hist = Figure(figsize=(8 * len(model.layers), 8))
     fig_hist.create_grid((1, len(model.layers)))
 
     def display(model):
@@ -146,13 +130,14 @@ if __name__ == "__main__":
 
     records = defaultdict(list)
     for epoch in trange(args.n_epochs, leave=True):
-        # 图片：以下到fig.close
         model, acc_t = run(
             model, X_train, Y_train, args.dt, args.T, args.T_th, callback=display
         )
         records["acc_t"].append(acc_t)
+
         model, acc_e = run(model, X_eval, Y_eval, args.dt, args.T)
         records["acc_e"].append(acc_e)
+
         fig = Figure()
         fig[0].plot(records["acc_t"])
         fig[0].plot(records["acc_e"])

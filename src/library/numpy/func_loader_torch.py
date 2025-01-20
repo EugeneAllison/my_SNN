@@ -21,6 +21,7 @@ __all__ = [
     "constant",
     "NoiseFunc",
     "generate_random_ga_01",
+    "generate_random_ga",
 ]
 
 import sys
@@ -126,24 +127,7 @@ def generate_random_ga_01(shape, ratio, seed):
     return ga
 
 
-"""
-代码修改说明：
-
-1. 将 `numpy` 替换为 `torch`：
-   - NumPy 中的 `np.tanh` 改为 PyTorch 的 `torch.tanh`。
-   - NumPy 中的 `np.exp` 改为 PyTorch 的 `torch.exp`。
-   - 等效替换所有函数和方法，例如 `np.cosh` 替换为 `torch.cosh`。
-
-2. 张量操作：
-   - NumPy 数组用 `torch.Tensor` 替换。
-   - 使用 PyTorch 的 `torch.clone` 创建可修改的张量副本。
-   - 使用 `torch.clamp` 替换 `np.clip` 实现限制。
-
-3. 特殊函数：
-   - `np.heaviside` 替换为 `torch.heaviside`。
-   - NumPy 的随机数生成 `np.random.randn` 替换为 `torch.randn_like`。
-
-4. 噪声生成：
-   - 在 `NoiseFunc` 中生成与输入张量形状一致的噪声，使用 PyTorch 的 `torch.randn_like`。
-
-这些修改确保代码功能和逻辑不变，同时改用 PyTorch 以支持 GPU 加速。"""
+def generate_random_ga(shape, n, seed):
+    """Generate a random vector with values in the range [-n, n]."""
+    torch.manual_seed(seed)
+    return (torch.rand(shape) * 2 * n) - n
