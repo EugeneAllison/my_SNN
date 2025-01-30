@@ -39,8 +39,8 @@ parser.add_argument("--n_epochs", type=int, default=20)
 parser.add_argument("--batch_size", type=int, default=100)
 parser.add_argument("--lr", type=float, default=1)
 parser.add_argument("--bfunc", type=str, required=True)  # 必须
-parser.add_argument("--amp", type=float, default=1.0)
-parser.add_argument("--phase", type=float, default=0)
+parser.add_argument("--amp", type=float, default=0.15)
+parser.add_argument("--phase", type=float, default=155)
 
 parser.add_argument("--radian", action="store_true")
 parser.add_argument("--final_only", action="store_true")
