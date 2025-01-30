@@ -3,3 +3,4 @@ data
 result
 .vscode
 .pytest_cache
+.pt
