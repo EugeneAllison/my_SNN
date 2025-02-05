@@ -44,6 +44,7 @@ class SpikingLayer(torch.nn.Module):
         self._B = (
             torch.rand(self.dim_out, self.dim_in, device=self.device) * 2 - 1
         ) * math.sqrt(3) * W_sd + W_avg
+        # print('_B is :', self._B)
         self.eta = 2 / self.dim_in
 
     # def init_state(self, inputs, keep_state=True):
@@ -56,7 +57,11 @@ class SpikingLayer(torch.nn.Module):
 
     def init_state(self, inputs, keep_state=True):
         shape = (*inputs.shape[:-1], self.dim_out)
-        if getattr(self, "v", None) is not None and shape == self.v.shape and keep_state:
+        if (
+            getattr(self, "v", None) is not None
+            and shape == self.v.shape
+            and keep_state
+        ):
             return
         self.v = torch.zeros(shape, device=self.device)
         self.h = torch.zeros(shape, device=self.device)
@@ -139,9 +144,12 @@ class SpikingLayer(torch.nn.Module):
 
 class SpikingNetwork(object):
 
-    def __init__(self, dims, bf=0.0338, device=device):
+    def __init__(self, dims, bf=0.0338, device=device, target_radius=0, seed=42):
         self.layers = []
         class_num = dims[-1]
+        # 设置随机种子，保证结果可复现
+        # torch.manual_seed(seed)
+
         for dim_in, dim_out in zip(dims[:-1], dims[1:]):
             layer = SpikingLayer(dim_in, dim_out, device=device)
             layer.init_weight()
@@ -150,11 +158,25 @@ class SpikingNetwork(object):
         B = torch.eye(class_num, device=device)
         self.layers[-1].B = B.clone()
         for l_pre, l_post in zip(reversed(self.layers[:-1]), reversed(self.layers[1:])):
-            print(B.shape, l_post._B.shape)
+            # 原有：print(B.shape, l_post._B.shape)
+            print(f"Original B shape: {B.shape}, _B shape: {l_post._B.shape}")
             # B = np.dot(B, l_post._B) * bf
             # B = torch.matmul(B, l_post.B.T) * bf
             B = torch.matmul(B, l_post._B) * bf
             l_pre.B = B.clone()
+        # 控制谱半径
+        if target_radius != 0:
+            print("\nControlling spectral radius...")
+            for i, layer in enumerate(self.layers):
+                if hasattr(layer, "B"):
+                    u, s, v = torch.linalg.svd(layer.B)
+                    spectral_radius = torch.max(s) 
+                    print(f"Layer {i} Original B matrix and spectral_radius:")
+                    print(layer.B, spectral_radius)
+                    layer.B = self.control_spectral_radius(layer.B, target_radius)
+                    print(f"Layer {i} Adjusted B matrix:")
+                    print(layer.B)
+        # 调整每一层的 B 矩阵（原有）：
         for layer in self.layers:
             layer.B *= layer.eta
 
@@ -188,3 +210,14 @@ class SpikingNetwork(object):
     def record(self, **kwargs):
         for layer in self.layers:
             layer.record(**kwargs)
+
+    def control_spectral_radius(self, matrix, target_radius):
+        u, s, v = torch.linalg.svd(matrix)
+        spectral_radius = torch.max(s) 
+        print(f"Original Spectral Radius: {spectral_radius.item():.4f}")
+
+        adjusted_matrix = (matrix / spectral_radius) * target_radius
+        u_adj, s_adj, v_adj = torch.linalg.svd(adjusted_matrix)
+        new_spectral_radius = torch.max(s_adj)
+        print(f"Adjusted Spectral Radius: {new_spectral_radius.item():.4f}")
+        return adjusted_matrix

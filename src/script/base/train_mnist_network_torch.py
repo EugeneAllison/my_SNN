@@ -31,14 +31,14 @@ import src.library.numpy.func_loader_torch
 from src.library.numpy.spiking_network_torch import SpikingNetwork
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--root_dir", type=str, required=True)  # 必须
+parser.add_argument("--root_dir", type=str, required=True)
 parser.add_argument("--init_id", type=int, default=0)
 parser.add_argument("--trial_num", type=int, default=1)
 parser.add_argument("--net_dims", type=int, nargs="+", default=[784, 1000, 10])
 parser.add_argument("--n_epochs", type=int, default=20)
 parser.add_argument("--batch_size", type=int, default=100)
 parser.add_argument("--lr", type=float, default=1)
-parser.add_argument("--bfunc", type=str, required=True)  # 必须
+parser.add_argument("--bfunc", type=str, required=True)
 parser.add_argument("--amp", type=float, default=0.15)
 parser.add_argument("--phase", type=float, default=155)
 
@@ -127,7 +127,7 @@ if __name__ == "__main__":
     minibatch_cnt = X_train.shape[0] // args.batch_size
     model.record(size=args.n_epochs * minibatch_cnt * 2)
 
-    fig_hist = Figure(figsize=(8 * len(model.layers), 8))  # 图片 137（now）～～147
+    fig_hist = Figure(figsize=(8 * len(model.layers), 8))
     fig_hist.create_grid((1, len(model.layers)))
 
     def display(model):

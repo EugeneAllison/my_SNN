@@ -34,8 +34,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--root_dir", type=str, required=True)  # 必须
 parser.add_argument("--init_id", type=int, default=0)
 parser.add_argument("--trial_num", type=int, default=1)
-parser.add_argument("--net_dims", type=int, nargs="+", default=[784, 900, 124, 10])
-parser.add_argument("--n_epochs", type=int, default=60)
+parser.add_argument("--net_dims", type=int, nargs="+", default=[784, 1000, 1000, 10])
+parser.add_argument("--n_epochs", type=int, default=100)
 parser.add_argument("--batch_size", type=int, default=100)
 parser.add_argument("--lr", type=float, default=0.1)
 parser.add_argument("--bfunc", type=str, required=True)  # 必须

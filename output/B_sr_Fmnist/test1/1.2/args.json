@@ -1,0 +1,24 @@
+{
+    "root_dir": "./output/B_sr_Fmnist/1.2",
+    "init_id": 0,
+    "trial_num": 1,
+    "net_dims": [
+        784,
+        1000,
+        10
+    ],
+    "n_epochs": 20,
+    "batch_size": 100,
+    "lr": 0.1,
+    "bfunc": "opto",
+    "amp": 0.1,
+    "phase": 160,
+    "radian": false,
+    "final_only": false,
+    "use_bp": false,
+    "T": 100,
+    "T_th": 20,
+    "dt": 0.25,
+    "target_radius": 1.2,
+    "seed": 42
+}
